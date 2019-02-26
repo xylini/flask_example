@@ -2,8 +2,8 @@ import datetime
 
 from flask import Flask
 from flask_migrate import Migrate
-from config import DevConfig
 from flask_sqlalchemy import SQLAlchemy
+from config import DevConfig
 
 app = Flask(__name__)
 app.config.from_object(DevConfig)
@@ -71,7 +71,7 @@ class Post(db.Model):
 
 class Comment(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
-    title = db.Column(db.String(255), nullable=False)
+    title = db.Column(db.String(255), nullable=True)
     text = db.Column(db.Text())
     date = db.Column(db.DateTime(), default=datetime.datetime.now())
 
