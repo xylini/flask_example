@@ -1,4 +1,4 @@
-from app import app, db, User, Post, Comment, Tag, tags, migrate
+from main import app, db, User, Post, Comment, Tag, tags, migrate
 
 @app.shell_context_processor
 def make_shell_context():

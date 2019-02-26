@@ -1,8 +1,8 @@
 import datetime
 
 from flask import Flask
-from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from config import DevConfig
 
 app = Flask(__name__)
