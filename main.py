@@ -1,13 +1,15 @@
 import datetime
+import random
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from config import DevConfig
 from sqlalchemy import func
-from flask import Flask, render_template, flash, redirect, url_for
+from flask import Flask, render_template, flash, redirect, url_for, session, g, Blueprint
 from flask_wtf import FlaskForm as Form
 from wtforms import StringField, TextAreaField
 from wtforms.validators import DataRequired, Length
+from flask.views import View
 
 
 app = Flask(__name__)
@@ -101,8 +103,8 @@ class Tag(db.Model):
 
 
 class CommentForm(Form):
-    name = StringField(
-        'Name',
+    title = StringField(
+        'Title',
         validators=[DataRequired(), Length(max=255)]
     )
     text = TextAreaField(u'Comment', validators=[DataRequired()])
@@ -141,7 +143,7 @@ def post(post_id):
     form = CommentForm()
     if form.validate_on_submit():
         new_comment = Comment()
-        new_comment.name = form.name.data
+        new_comment.title = form.name.data
         new_comment.text = form.text.data
         new_comment.post_id = post_id
         try:
@@ -200,6 +202,68 @@ def posts_by_user(username):
         top_tags=top_tags
     )
 
+
+@app.before_request
+def before_request():
+    session['page_loads'] = session.get('page_loads', 0) + 1
+    g.random_key = random.randrange(1, 10)
+    # print(session['page_loads'])
+    # print(g.random_key)
+
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('404.html'), 404
+
+
+blog_blueprint = Blueprint (
+    'blog',
+    __name__,
+    template_folder='templates/blog',
+    url_prefix='/blog'
+)
+
+
+class GenericListView(View):
+
+    def __init__(self, model, list_template='generic_list.html'):
+        self.model = model
+        self.list_template = list_template
+        self.columns = self.model.__mapper__.columns.keys()
+        # Call super python3 style
+        super(GenericListView, self).__init__()
+
+    def render_template(self, context):
+        return render_template(self.list_template, **context)
+
+    def get_objects(self):
+        return self.model.query.all()
+
+    def dispatch_request(self):
+        context = {'objects': self.get_objects(),
+                   'columns': self.columns}
+        return self.render_template(context)
+
+
+app.add_url_rule(
+    '/generic_posts', view_func=GenericListView.as_view(
+        'generic_posts', model=Post)
+    )
+
+app.add_url_rule(
+    '/generic_users', view_func=GenericListView.as_view(
+        'generic_users', model=User)
+)
+
+app.add_url_rule(
+    '/generic_comments', view_func=GenericListView.as_view(
+        'generic_comments', model=Comment)
+)
+
+app.add_url_rule(
+    '/generic_tags', view_func=GenericListView.as_view(
+        'generic_tags', model=Tag)
+)
 
 if __name__ == '__main__':
     app.run()
