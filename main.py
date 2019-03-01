@@ -11,7 +11,6 @@ from wtforms import StringField, TextAreaField
 from wtforms.validators import DataRequired, Length
 from flask.views import View
 
-
 app = Flask(__name__)
 app.config.from_object(DevConfig)
 
@@ -21,6 +20,13 @@ migrate = Migrate(app, db)
 tags = db.Table('post_tags',
                 db.Column('post_id', db.Integer(), db.ForeignKey('post.id')),
                 db.Column('tag_id', db.Integer(), db.ForeignKey('tag.id')))
+
+blog_blueprint = Blueprint(
+    'blog',
+    __name__,
+    template_folder='templates/blog',
+    url_prefix='/blog'
+)
 
 
 class User(db.Model):
@@ -126,7 +132,12 @@ def sidebar_data():
 
 
 @app.route('/')
-@app.route('/<int:page>')
+def index():
+    return redirect(url_for('blog.home'))
+
+
+@blog_blueprint.route('/')
+@blog_blueprint.route('/<int:page>')
 def home(page=1):
     posts = Post.query.order_by(Post.publish_date.desc()).paginate(page, app.config.get('POSTS_PER_PAGE', 10), False)
     recent, top_tags = sidebar_data()
@@ -138,7 +149,7 @@ def home(page=1):
     )
 
 
-@app.route('/post/<int:post_id>', methods=('GET', 'POST'))
+@blog_blueprint.route('/post/<int:post_id>', methods=('GET', 'POST'))
 def post(post_id):
     form = CommentForm()
     if form.validate_on_submit():
@@ -173,7 +184,7 @@ def post(post_id):
     )
 
 
-@app.route('/posts_by_tag/<string:tag_name>')
+@blog_blueprint.route('/posts_by_tag/<string:tag_name>')
 def posts_by_tag(tag_name):
     tag = Tag.query.filter_by(title=tag_name).first_or_404()
     posts = tag.posts.order_by(Post.publish_date.desc()).all()
@@ -188,7 +199,7 @@ def posts_by_tag(tag_name):
     )
 
 
-@app.route('/posts_by_user/<string:username>')
+@blog_blueprint.route('/posts_by_user/<string:username>')
 def posts_by_user(username):
     user = User.query.filter_by(username=username).first_or_404()
     posts = user.posts.order_by(Post.publish_date.desc()).all()
@@ -216,14 +227,6 @@ def page_not_found(error):
     return render_template('404.html'), 404
 
 
-blog_blueprint = Blueprint (
-    'blog',
-    __name__,
-    template_folder='templates/blog',
-    url_prefix='/blog'
-)
-
-
 class GenericListView(View):
 
     def __init__(self, model, list_template='generic_list.html'):
@@ -248,7 +251,7 @@ class GenericListView(View):
 app.add_url_rule(
     '/generic_posts', view_func=GenericListView.as_view(
         'generic_posts', model=Post)
-    )
+)
 
 app.add_url_rule(
     '/generic_users', view_func=GenericListView.as_view(
@@ -264,6 +267,8 @@ app.add_url_rule(
     '/generic_tags', view_func=GenericListView.as_view(
         'generic_tags', model=Tag)
 )
+
+app.register_blueprint(blog_blueprint)
 
 if __name__ == '__main__':
     app.run()
