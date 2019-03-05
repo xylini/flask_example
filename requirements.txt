@@ -10,3 +10,5 @@ Werkzeug==0.14.1
 Flask-SQLAlchemy
 Flask-Migrate
 Flask-WTF
+Flask-Login
+flask-bcrypt
