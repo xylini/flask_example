@@ -27,6 +27,12 @@ def login():
     )
 
 @auth_blueprint.route('/logout', methods=['GET', 'POST'])
+def logout():
+    logout_user()
+    flash("You have been logged out.", category="success")
+    return redirect(url_for('main.index'))
+
+@auth_blueprint.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
 
