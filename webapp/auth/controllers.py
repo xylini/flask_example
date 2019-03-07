@@ -35,14 +35,16 @@ def logout():
 @auth_blueprint.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
-
+    if form.validate():
+        print("submitted")
     if form.validate_on_submit():
         new_user = User(form.username.data)
         new_user.set_password(form.password.data)
 
+        print("przed")
         db.session.add(new_user)
         db.session.commit()
-
+        print("pooooo")
         flash("Your user has been created, please login.", category="success")
 
         return redirect(url_for('.login'))

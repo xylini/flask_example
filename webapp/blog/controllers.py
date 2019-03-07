@@ -98,7 +98,7 @@ def post(post_id):
     form = CommentForm()
     if form.validate_on_submit():
         new_comment = Comment()
-        new_comment.title = form.name.data
+        new_comment.title = form.title.data
         new_comment.text = form.text.data
         new_comment.post_id = post_id
         try:
@@ -109,7 +109,7 @@ def post(post_id):
             db.session.rollback()
         else:
             flash('Comment added', 'info')
-        return redirect(url_for('post', post_id=post_id))
+        return redirect(url_for('blog.post', post_id=post_id))
 
     post = Post.query.get_or_404(post_id)
     tags = post.tags
