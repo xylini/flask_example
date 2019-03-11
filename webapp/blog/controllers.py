@@ -66,6 +66,20 @@ def new_post():
         form=form
     )
 
+@blog_blueprint.route('/delete/<int:id>', methods=['GET', 'POST'])
+@login_required
+def delete_post(id):
+    post = Post.query.get_or_404(id)
+    if current_user.id == post.user.id:
+        db.session.delete(post)
+        db.session.commit()
+        flash('Post deleted', 'warning')
+        return redirect(url_for('.home'))
+
+    #TODO: PRZETESTOWAC JAK DZIALA TEN ABORT
+    abort(403)
+
+
 
 @blog_blueprint.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -152,7 +166,7 @@ def posts_by_user(username):
     return render_template(
         'user.html',
         user=user,
-        ports=posts,
+        posts=posts,
         recent=recent,
         top_tags=top_tags
     )

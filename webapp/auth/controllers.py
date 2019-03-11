@@ -35,8 +35,7 @@ def logout():
 @auth_blueprint.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
-    if form.validate():
-        print("submitted")
+
     if form.validate_on_submit():
         new_user = User(form.username.data)
         new_user.set_password(form.password.data)

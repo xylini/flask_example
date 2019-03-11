@@ -21,14 +21,15 @@ class Post(db.Model):
     comments = db.relationship(
         'Comment',
         backref='post',
-        lazy='dynamic'
+        lazy='dynamic',
+        cascade="all, delete-orphan"
     )
 
     # many - many
     tags = db.relationship(
         'Tag',
         secondary=tags,
-        backref=db.backref('posts', lazy='dynamic')
+        backref=db.backref('posts', lazy='dynamic'),
     )
 
     def __init__(self, title=""):
