@@ -29,7 +29,7 @@ def sidebar_data():
         func.count(tags.c.post_id).label('total')
     ).join(
         tags
-    ).group_by(Tag).order_by('total DESC').limit(5).all()
+    ).group_by(Tag).order_by('total').limit(5).all() #nagly bug gdy uzyte '.order_by('total  DESC')'
 
     return recent, top_tags
 
